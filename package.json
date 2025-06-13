@@ -2,20 +2,23 @@
   "name": "my-interactive-resume",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://SHUBHANGI11gaikwad.github.io/MyResume",
   "dependencies": {
-    "@tailwindcss/postcss7-compat": "^2.2.17",
+    "@craco/craco": "^7.1.0",
     "chart.js": "^4.4.9",
     "cra-template-pwa": "2.0.0",
     "firebase": "^11.9.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "^5.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -34,5 +37,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.10",
+    "autoprefixer": "^10.4.21",
+    "gh-pages": "^6.3.0",
+    "postcss": "^8.5.5",
+    "tailwindcss": "^3.4.1"
   }
 }

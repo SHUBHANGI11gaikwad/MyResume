@@ -618,7 +618,7 @@ const App = () => {
         // Check if the text is a numbered list
         const isNumberedList = lines.every(line => /^\d+\.\s/.test(line.trim()));
         // Check if the text is a bulleted list (can be -, *, or •)
-        const isBulletedList = lines.every(line => /^[\*\-\•]\s/.test(line.trim()));
+        const isBulletedList = lines.every(line => /^[*\-•]\s/.test(line.trim()));
 
         if (isNumberedList) {
             return (
@@ -634,7 +634,7 @@ const App = () => {
                 <ul className="formatted-list">
                     {lines.map((line, index) => (
                         // Remove the bullet and space from the start of the line for rendering
-                        <li key={index}>{line.replace(/^[\*\-\•]\s/, '')}</li>
+                        <li key={index}>{line.replace(/^[*\-•]\s/, '')}</li>
                     ))}
                 </ul>
             );
@@ -1778,7 +1778,7 @@ const App = () => {
                 <div className="footer-container">
                     <h2 className="footer-title">Get In Touch</h2>
                     <p className="footer-description">I'm currently seeking new opportunities and am open to discussing how my skills can benefit your team. Feel free to reach out.</p>
-                    <a href="mailto:shubhangigaikwad730@gmail.com" className="email-link">shubhangigaik9ad730@gmail.com</a>
+                    <a href="mailto:shubhangigaikwad730@gmail.com" className="email-link">shubhangigaikwad730@gmail.com</a>
                     <div className="copyright">&copy; 2025 Shubhangi Gaikwad. Interactive Resume.</div>
                 </div>
             </footer>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import Chart from 'chart.js/auto';
 
 // React functional component for the entire application
@@ -6,42 +6,15 @@ const App = () => {
     // State variables for UI interactions and data
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [flippedStates, setFlippedStates] = useState({}); // To manage project card flips
-    const [selectedSkill, setSelectedSkill] = useState('');
-    const [skillExplanation, setSkillExplanation] = useState('');
-    const [isLoadingSkillExplanation, setIsLoadingSkillExplanation] = useState(false);
-    const [skillExplanationError, setSkillExplanationError] = useState(false);
     const [activeNavLink, setActiveNavLink] = useState('about');
     // To store LLM-generated project summaries and their loading states
     const [projectSummaries, setProjectSummaries] = useState({}); 
     const [isLoadingProjectSummary, setIsLoadingProjectSummary] = useState({}); 
-    const [interviewQuestions, setInterviewQuestions] = useState(''); // To store LLM-generated interview questions
-    const [isLoadingInterviewQuestions, setIsLoadingInterviewQuestions] = useState(false); // Loading state for interview questions
-    const [interviewQuestionsError, setInterviewQuestionsError] = useState(false); // Error state for interview questions
-    const [selectedInterviewTopic, setSelectedInterviewTopic] = useState(''); // Selected topic for interview questions
-    const [selectedCoverLetterTopic, setSelectedCoverLetterTopic] = useState(''); // Selected topic for cover letter snippet
-    const [jobDescriptionInput, setJobDescriptionInput] = useState(''); // User input for job description
-    const [coverLetterSnippet, setCoverLetterSnippet] = useState(''); // Generated cover letter snippet
-    const [isLoadingCoverLetterSnippet, setIsLoadingCoverLetterSnippet] = useState(false); // Loading state for cover letter snippet
-    const [coverLetterError, setCoverLetterError] = useState(false); // Error state for cover letter snippet
-    const [selectedImprovementSkill, setSelectedImprovementSkill] = useState(''); // Selected skill for improvement suggestions
-    const [skillImprovementSuggestions, setSkillImprovementSuggestions] = useState(''); // Generated skill improvement suggestions
-    const [isLoadingSkillImprovement, setIsLoadingSkillImprovement] = useState(false); // Loading state for skill improvement
-    const [skillImprovementError, setSkillImprovementError] = useState(false); // Error error for skill improvement
-    const [jobRoleInput, setJobRoleInput] = useState(''); // Input for job role relevance check
-    const [jobRoleRelevance, setJobRoleRelevance] = useState(''); // Generated job role relevance
-    const [isLoadingJobRoleRelevance, setIsLoadingJobRoleRelevance] = useState(false); // Loading state for job role relevance
-    const [jobRoleRelevanceError, setJobRoleRelevanceError] = useState(false); // Error state for job role relevance
-
-    // New state for Resume Feedback & Optimization
-    const [resumeFeedback, setResumeFeedback] = useState('');
-    const [isLoadingResumeFeedback, setIsLoadingResumeFeedback] = useState(false);
-    const [resumeFeedbackError, setResumeFeedbackError] = useState(false);
-
     // Resume data is now hardcoded directly
     const initialSkills = [
-        'Python', 'Java', 'SQL', 'JavaScript', 'Pandas/NumPy', 'Scikit-learn', 'Spring Boot', 'ReactJS', 'HTML/CSS', 'Database Mgmt'
+        'Python', 'Java', 'SQL', 'JavaScript', 'React', 'Dot Net', 'Spring Boot', 'ReactJS', 'HTML/CSS', 'Database Mgmt'
     ];
-    const initialSkillProficiency = [90, 85, 80, 75, 80, 70, 75, 70, 90, 85];
+    const initialSkillProficiency = [79, 85, 80, 75, 80, 75, 75, 70, 90, 85];
     const initialProjects = [
         {
             id: 'weather-detection',
@@ -68,12 +41,37 @@ const App = () => {
         {
             id: 'library-management',
             title: 'Library Management System',
-            summary: 'A console-based system in Java and MySQL with full CRUD operations for library management.',
+            summary: 'A console-based system in C# with full CRUD operations for library management.',
             details: [
                 'Backend logic built with core Java.',
+                'A simple C# Console Application to manage a library database using SQL Server.',
+                'This project demonstrates basic CRUD operations (Create, Read, Update, Delete/Search) from a console menu, suitable for learning, interviews, and university assessments.',
                 'Utilized MySQL for database management.',
                 'Implemented full CRUD (Create, Read, Update, Delete) operations.',
                 'Solidified database interaction and application logic skills.',
+            ]
+        },
+         {
+            id: 'NotesApp',
+            title: 'Notes Manager System',
+            summary: 'A Next.js with full CRUD Operations for Notes-saas management.',
+            details: [
+                'Backend logic built with Next.js.',
+              'Solidified database interaction and application logic skills.',
+              'https://notes-saas-phi.vercel.app/',
+            ]
+        },
+        {
+            id: 'Employee CRUD Application',
+            title: 'Employee Management System',
+            summary: 'This is a simple full-stack web application built with ASP.NET Core Razor Pages to demonstrate basic CRUD (Create, Read, Update, Delete) operations.',
+            details: [
+              'Backend logic built with ASP.NET Core Razor Pages.',
+              ' Solidified database interaction and application logic skills.',
+              ' Create: Add a new employee to the database.',
+              'Read: View a list of all employees and their details.',
+              'Update: Edit the details of an existing employee.',
+              'Delete: Remove an employee from the database.'
             ]
         }
     ];
@@ -83,7 +81,7 @@ const App = () => {
         skills: initialSkills,
         skillProficiency: initialSkillProficiency,
         projects: initialProjects,
-        aboutText: "Motivated Computer Engineer with a strong foundation in Python, Java, and SQL, seeking an entry-level opportunity as an AI Engineer or Data Scientist. Eager to leverage analytical skills and project experience in real-time data processing and predictive modeling to contribute to innovative AI and data-driven solutions, gain exposure to live projects, and drive continuous professional growth."
+        aboutText: "Motivated Computer Engineer with a strong foundation in Java, Dot Net and SQL, seeking an entry-level opportunity as an Software engineer or AI Engineer. Eager to leverage analytical skills and project experience in real-time data processing and predictive modeling to contribute to innovative AI and data-driven solutions, gain exposure to live projects, and drive continuous professional growth."
     });
 
     // Ref for the Chart.js canvas element
@@ -91,10 +89,6 @@ const App = () => {
     const chartInstance = useRef(null);
 
     // Derived data for LLM topics, updated when resumeData changes
-    const topicsForLLM = useMemo(() => resumeData ? [
-        ...resumeData.skills.map(skill => ({ type: 'skill', label: skill, value: `Skill: ${skill}` })),
-        ...resumeData.projects.map(project => ({ type: 'project', label: project.title, value: `Project: ${project.id}` }))
-    ] : [], [resumeData]);
 
 
     // Effect for initializing and destroying Chart.js instance
@@ -172,27 +166,7 @@ const App = () => {
         };
     }, [resumeData]);
 
-    // Effect for populating dropdowns with initial data from resumeData
-    useEffect(() => {
-        // Only set initial selected skill if it's not already set to prevent overriding user selections
-        if (resumeData && resumeData.skills.length > 0) {
-            if (!selectedSkill) {
-                setSelectedSkill(resumeData.skills[0]);
-            }
-            if (!selectedImprovementSkill) {
-                setSelectedImprovementSkill(resumeData.skills[0]);
-            }
-        }
-        if (topicsForLLM.length > 0) {
-            if (!selectedInterviewTopic) {
-                setSelectedInterviewTopic(topicsForLLM[0].value);
-            }
-            if (!selectedCoverLetterTopic) {
-                setSelectedCoverLetterTopic(topicsForLLM[0].value);
-            }
-        }
-    }, [resumeData, topicsForLLM, selectedSkill, selectedImprovementSkill, selectedInterviewTopic, selectedCoverLetterTopic]); // Added state variables to dependencies
-
+ 
     // Effect for handling scroll-based active navigation link highlighting
     useEffect(() => {
         const sections = document.querySelectorAll('main section');
@@ -225,58 +199,7 @@ const App = () => {
         }));
     };
 
-    const handleSkillSelectChange = (event) => {
-        const newSkill = event.target.value;
-        setSelectedSkill(newSkill);
-        setSkillExplanation('');
-        setSkillExplanationError(false);
-        console.log('Selected Skill (Explain):', newSkill); // Log the selected skill
-    };
 
-    const handleExplainSkill = async () => {
-        if (!selectedSkill) {
-            setSkillExplanation('Please select a skill first.');
-            setSkillExplanationError(false);
-            return;
-        }
-
-        setSkillExplanation('');
-        setSkillExplanationError(false);
-        setIsLoadingSkillExplanation(true);
-
-        try {
-            let chatHistory = [];
-            // Modified prompt to request bullet points
-            const prompt = `Explain "${selectedSkill}" in the context of Data Science/AI, and how it's relevant for someone with foundational skills in this field. Provide 2-3 key points in bullet format.`;
-            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-            const payload = { contents: chatHistory };
-            const apiKey = "AIzaSyAQhO7wnLZVb2_1MaAglJ64fDmC69BIXbg"; // Replace with your actual API key
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await response.json();
-
-            if (result.candidates && result.candidates.length > 0 &&
-                result.candidates[0].content && result.candidates[0].content.parts &&
-                result.candidates[0].content.parts.length > 0) {
-                const text = result.candidates[0].content.parts[0].text;
-                setSkillExplanation(text);
-            } else {
-                setSkillExplanation('Could not generate explanation. Please try again.');
-                setSkillExplanationError(true);
-            }
-        } catch (error) {
-            console.error('Error fetching skill explanation:', error);
-            setSkillExplanation('Failed to fetch explanation due to a network error or API issue.');
-            setSkillExplanationError(true);
-        } finally {
-            setIsLoadingSkillExplanation(false);
-        }
-    };
 
     const handleSummarizeProject = async (projectId, projectTitle, projectDetails) => {
         setIsLoadingProjectSummary(prevState => ({ ...prevState, [projectId]: true }));
@@ -313,303 +236,6 @@ const App = () => {
             setIsLoadingProjectSummary(prevState => ({ ...prevState, [projectId]: false }));
         }
     };
-
-    const handleInterviewTopicChange = (event) => {
-        setSelectedInterviewTopic(event.target.value);
-        setInterviewQuestions('');
-        setInterviewQuestionsError(false);
-    };
-
-    const handleGenerateInterviewQuestions = async () => {
-        if (!selectedInterviewTopic) {
-            setInterviewQuestions('Please select a topic first.');
-            setInterviewQuestionsError(false);
-            return;
-        }
-
-        setInterviewQuestions('');
-        setInterviewQuestionsError(false);
-        setIsLoadingInterviewQuestions(true);
-
-        let promptContent = '';
-        const [type, identifier] = selectedInterviewTopic.split(': ');
-
-        if (type === 'Skill') {
-            // Modified prompt to request a numbered list
-            promptContent = `Generate 3-5 common interview questions for a Data Science/AI role, specifically focusing on the "${identifier}" skill. Provide them as a numbered list. Assume the candidate has foundational to proficient knowledge.`;
-        } else if (type === 'Project') {
-            const project = resumeData.projects.find(p => p.id === identifier);
-            if (project) {
-                // Modified prompt to request a numbered list
-                promptContent = `Generate 3-5 interview questions based on the following project for a Data Science/AI role. Focus on technical challenges, solutions, and learning outcomes. Provide them as a numbered list.\n\nProject Title: ${project.title}\nDetails: ${project.details.join('\n')}`;
-            } else {
-                setInterviewQuestions('Project details not found.');
-                setInterviewQuestionsError(true);
-                setIsLoadingInterviewQuestions(false);
-                return;
-            }
-        }
-
-        try {
-            let chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: promptContent }] });
-            const payload = { contents: chatHistory };
-            const apiKey = "AIzaSyAQhO7wnLZVb2_1MaAglJ64fDmC69BIXbg"; // Replace with your actual API key
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await response.json();
-
-            if (result.candidates && result.candidates.length > 0 &&
-                result.candidates[0].content && result.candidates[0].content.parts &&
-                result.candidates[0].content.parts.length > 0) {
-                const text = result.candidates[0].content.parts[0].text;
-                setInterviewQuestions(text);
-            } else {
-                setInterviewQuestions('Could not generate questions. Please try again.');
-                setInterviewQuestionsError(true);
-            }
-        } catch (error) {
-            console.error('Error fetching interview questions:', error);
-            setInterviewQuestions('Failed to fetch questions due to a network error or API issue.');
-            setInterviewQuestionsError(true);
-        } finally {
-            setIsLoadingInterviewQuestions(false);
-        }
-    };
-
-    const handleCoverLetterTopicChange = (event) => {
-        setSelectedCoverLetterTopic(event.target.value);
-        setCoverLetterSnippet('');
-        setCoverLetterError(false);
-    };
-
-    const handleGenerateCoverLetterSnippet = async () => {
-        if (!selectedCoverLetterTopic || !jobDescriptionInput.trim()) {
-            setCoverLetterSnippet('Please select a topic and enter job/company details.');
-            setCoverLetterError(false);
-            return;
-        }
-
-        setCoverLetterSnippet('');
-        setCoverLetterError(false);
-        setIsLoadingCoverLetterSnippet(true);
-
-        let promptContent = '';
-        const [type, identifier] = selectedCoverLetterTopic.split(': ');
-
-        if (type === 'Skill') {
-            // Modified prompt to request a short paragraph or 2 sentences as bullet points
-            promptContent = `Generate a 2-3 sentence cover letter snippet for a job at "${jobDescriptionInput}" highlighting how my "${identifier}" skill is relevant. Provide it as a short paragraph or 2-3 concise sentences.`;
-        } else if (type === 'Project') {
-            const project = resumeData.projects.find(p => p.id === identifier);
-            if (project) {
-                // Modified prompt to request a short paragraph or 2 sentences as bullet points
-                promptContent = `Generate a 2-3 sentence cover letter snippet for a job at "${jobDescriptionInput}" highlighting how my project "${project.title}" (${project.details.join(', ')}) makes me a strong candidate. Provide it as a short paragraph or 2-3 concise sentences.`;
-            } else {
-                setCoverLetterSnippet('Project details not found for selected project.');
-                setCoverLetterError(true);
-                setIsLoadingCoverLetterSnippet(false);
-                return;
-            }
-        }
-
-        try {
-            let chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: promptContent }] });
-            const payload = { contents: chatHistory };
-            const apiKey = "AIzaSyAQhO7wnLZVb2_1MaAglJ64fDmC69BIXbg"; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await response.json();
-
-            if (result.candidates && result.candidates.length > 0 &&
-                result.candidates[0].content && result.candidates[0].content.parts &&
-                result.candidates[0].content.parts.length > 0) {
-                const text = result.candidates[0].content.parts[0].text;
-                setCoverLetterSnippet(text);
-            } else {
-                setCoverLetterSnippet('Could not generate snippet. Please try again.');
-                setCoverLetterError(true);
-            }
-        } catch (error) {
-            console.error('Error fetching cover letter snippet:', error);
-            setCoverLetterSnippet('Failed to fetch snippet due to a network error or API issue.');
-            setCoverLetterError(true);
-        } finally {
-            setIsLoadingCoverLetterSnippet(false);
-        }
-    };
-
-    const handleImprovementSkillChange = (event) => {
-        const newSkill = event.target.value;
-        setSelectedImprovementSkill(newSkill);
-        setSkillImprovementSuggestions('');
-        setSkillImprovementError(false);
-        console.log('Selected Skill (Improvement):', newSkill); // Log the selected skill
-    };
-
-    const handleGenerateImprovementSuggestions = async () => {
-        if (!selectedImprovementSkill) {
-            setSkillImprovementSuggestions('Please select a skill first.');
-            setSkillImprovementError(false);
-            return;
-        }
-
-        setSkillImprovementSuggestions('');
-        setSkillImprovementError(false);
-        setIsLoadingSkillImprovement(true);
-
-        // Modified prompt to request bullet points
-        const promptContent = `Provide 3-5 concise, actionable suggestions for how to improve and deepen knowledge in the "${selectedImprovementSkill}" skill, specifically for someone aiming for an AI/Data Science role. Provide them as bullet points. Focus on practical steps like learning resources, project ideas, or specific concepts.`;
-
-        try {
-            let chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: promptContent }] });
-            const payload = { contents: chatHistory };
-            const apiKey = "AIzaSyAQhO7wnLZVb2_1MaAglJ64fDmC69BIXbg";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await response.json();
-
-            if (result.candidates && result.candidates.length > 0 &&
-                result.candidates[0].content && result.candidates[0].content.parts &&
-                result.candidates[0].content.parts.length > 0) {
-                const text = result.candidates[0].content.parts[0].text;
-                setSkillImprovementSuggestions(text);
-            } else {
-                setSkillImprovementSuggestions('Could not generate suggestions. Please try again.');
-                setSkillImprovementError(true);
-            }
-        } catch (error) {
-            console.error('Error fetching skill improvement suggestions:', error);
-            setSkillImprovementSuggestions('Failed to fetch suggestions due to a network error or API issue.');
-            setSkillImprovementError(true);
-        } finally {
-            setIsLoadingSkillImprovement(false);
-        }
-    };
-
-    const handleJobRoleRelevance = async () => {
-        if (!jobRoleInput.trim()) {
-            setJobRoleRelevance('Please enter a job role or description.');
-            setJobRoleRelevanceError(false);
-            return;
-        }
-
-        setJobRoleRelevance('');
-        setJobRoleRelevanceError(false);
-        setIsLoadingJobRoleRelevance(true);
-
-        // Resume content for LLM from the hardcoded resumeData
-        const resumeContentForLLM = `My resume details are as follows:
-        About Me: ${resumeData.aboutText}
-        Skills: ${resumeData.skills.join(', ')}
-        Projects: ${resumeData.projects.map(p => `${p.title} (${p.details.join('; ')})`).join('; ')}
-        Experience: Full Stack Developer Intern at NovaNectar Services Pvt. Ltd. (March 2024 - April 2024) - Contributed to enhancement of a Job Portal.
-        Education: Bachelor of Engineering, Computer Engineering from Shri Chattrrapati Shivajiraje College of Engineering, Pune University (2023, CGPA 8.2).
-        Certifications: Java Full Stack Development from Seed Infotech Institute, Pune.`;
-
-
-        // Modified prompt to request bullet points
-        const promptContent = `Analyze the following resume data and determine its relevance to the job role: "${jobRoleInput}". Provide a concise summary highlighting key skills and projects that align well as bullet points. Also, mention any potential gaps or areas for development if applicable, specifically for an AI/Data Science context, also in bullet points. Keep the total output under 150 words.
-        \n${resumeContentForLLM}`; // Use the generated resume content here
-
-        try {
-            let chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: promptContent }] });
-            const payload = { contents: chatHistory };
-            const apiKey = "AIzaSyAQhO7wnLZVb2_1MaAglJ64fDmC69BIXbg";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await response.json();
-
-            if (result.candidates && result.candidates.length > 0 &&
-                result.candidates[0].content && result.candidates[0].content.parts &&
-                result.candidates[0].content.parts.length > 0) {
-                const text = result.candidates[0].content.parts[0].text;
-                setJobRoleRelevance(text);
-            } else {
-                setJobRoleRelevance('Could not analyze relevance. Please try again.');
-                setJobRoleRelevanceError(true);
-            }
-        } catch (error) {
-            console.error('Error fetching job role relevance:', error);
-            setJobRoleRelevance('Failed to analyze relevance due to a network error or API issue.');
-            setJobRoleRelevanceError(true);
-        } finally {
-            setIsLoadingJobRoleRelevance(false);
-        }
-    };
-
-    const handleGenerateResumeFeedback = async () => {
-        setResumeFeedback('');
-        setResumeFeedbackError(false);
-        setIsLoadingResumeFeedback(true);
-
-        const resumeContentForLLM = `My resume details are as follows:
-        About Me: ${resumeData.aboutText}
-        Skills: ${resumeData.skills.join(', ')}
-        Projects: ${resumeData.projects.map(p => `${p.title} - ${p.summary} - ${p.details.join(', ')}`).join('\n')}
-        Experience: Full Stack Developer Intern at NovaNectar Services Pvt. Ltd. (March 2024 - April 2024) - Contributed to enhancement of a Job Portal.
-        Education: Bachelor of Engineering, Computer Engineering from Shri Chattrrapati Shivajiraje College of Engineering, Pune University (2023, CGPA 8.2).
-        Certifications: Java Full Stack Development from Seed Infotech Institute, Pune.`;
-
-        // Modified prompt to request bullet points
-        const promptContent = `Provide concise and actionable feedback on the following resume content. Focus on overall strength, clarity, potential areas for improvement, and tips for optimizing it for AI/Data Science roles. Suggest 2-3 specific improvements. Provide all feedback and suggestions as bullet points. Keep the total feedback under 200 words.
-        \n${resumeContentForLLM}`;
-
-        try {
-            let chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: promptContent }] });
-            const payload = { contents: chatHistory };
-            const apiKey = "AIzaSyAQhO7wnLZVb2_1MaAglJ64fDmC69BIXbg";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await response.json();
-
-            if (result.candidates && result.candidates.length > 0 &&
-                result.candidates[0].content && result.candidates[0].content.parts &&
-                result.candidates[0].content.parts.length > 0) {
-                const text = result.candidates[0].content.parts[0].text;
-                setResumeFeedback(text);
-            } else {
-                setResumeFeedback('Could not generate feedback. Please try again.');
-                setResumeFeedbackError(true);
-            }
-        } catch (error) {
-            console.error('Error fetching resume feedback:', error);
-            setResumeFeedback('Failed to fetch feedback due to a network error or API issue.');
-            setResumeFeedbackError(true);
-        } finally {
-            setIsLoadingResumeFeedback(false);
-        }
-    };
-
     // Helper function to render text with line breaks as paragraphs or list items
     const renderFormattedText = (text) => {
         if (!text) return null;
@@ -1399,16 +1025,12 @@ const App = () => {
             <header className="header">
                 <nav className="nav-container">
                     <div className="site-title">Shubhangi Gaikwad</div>
+                    
                     <div className="nav-links-desktop">
                         <a href="#about" className={`nav-link ${activeNavLink === 'about' ? 'active' : ''}`}>About</a>
                         <a href="#skills" className={`nav-link ${activeNavLink === 'skills' ? 'active' : ''}`}>Skills</a>
                         <a href="#projects" className={`nav-link ${activeNavLink === 'projects' ? 'active' : ''}`}>Projects</a>
                         <a href="#experience" className={`nav-link ${activeNavLink === 'experience' ? 'active' : ''}`}>Experience</a>
-                        <a href="#interview-prep" className={`nav-link ${activeNavLink === 'interview-prep' ? 'active' : ''}`}>Interview Prep</a>
-                        <a href="#cover-letter-prep" className={`nav-link ${activeNavLink === 'cover-letter-prep' ? 'active' : ''}`}>Cover Letter Prep</a>
-                        <a href="#skill-improvement" className={`nav-link ${activeNavLink === 'skill-improvement' ? 'active' : ''}`}>Skill Improvement</a>
-                        <a href="#job-relevance" className={`nav-link ${activeNavLink === 'job-relevance' ? 'active' : ''}`}>Job Relevance</a>
-                        <a href="#resume-feedback" className={`nav-link ${activeNavLink === 'resume-feedback' ? 'active' : ''}`}>Resume Feedback</a>
                         <a href="#contact" className="contact-button">Contact</a>
                     </div>
                     <div className="mobile-menu-toggle">
@@ -1422,11 +1044,6 @@ const App = () => {
                     <a href="#skills" onClick={handleMenuToggle}>Skills</a>
                     <a href="#projects" onClick={handleMenuToggle}>Projects</a>
                     <a href="#experience" onClick={handleMenuToggle}>Experience</a>
-                    <a href="#interview-prep" onClick={handleMenuToggle}>Interview Prep</a>
-                    <a href="#cover-letter-prep" onClick={handleMenuToggle}>Cover Letter Prep</a>
-                    <a href="#skill-improvement" onClick={handleMenuToggle}>Skill Improvement</a>
-                    <a href="#job-relevance" onClick={handleMenuToggle}>Job Relevance</a>
-                    <a href="#resume-feedback" onClick={handleMenuToggle}>Resume Feedback</a>
                     <a href="#contact" onClick={handleMenuToggle}>Contact</a>
                 </div>
             </header>
@@ -1434,7 +1051,7 @@ const App = () => {
             <main>
                 <section id="about" className="section">
                     <div className="section-container">
-                        <h1 className="about-title">Software Developer & AI Engineer & Data Scientist</h1>
+                        <h1 className="about-title">Software Developer & AI Engineer</h1>
                         <p className="about-text">{resumeData.aboutText}</p>
                         <div className="social-links">
                             <a href="https://linkedin.com/in/shubhangi-gaikwad-profile" target="_blank" rel="noopener noreferrer" className="social-link">
@@ -1453,41 +1070,7 @@ const App = () => {
                         <p className="section-description">This chart provides a visual overview of my technical proficiencies across different domains. Hover over any bar to see the skill and my self-assessed level of expertise.</p>
                         <div className="chart-container">
                             <canvas ref={chartRef}></canvas>
-                        </div>
-
-                        <div className="llm-section-card">
-                            <h3 className="llm-section-title">Explain a Skill ✨</h3>
-                            <p className="llm-section-intro">Select a skill from the dropdown and click the button to get a concise explanation of its relevance in AI/Data Science, powered by Gemini.</p>
-                            <div className="llm-input-group">
-                                {/* Added a unique key to the select element for better React reconciliation */}
-                                <select 
-                                    key="skill-explain-select"
-                                    id="skillSelect" 
-                                    className="llm-select"
-                                    value={selectedSkill}
-                                    onChange={handleSkillSelectChange}
-                                >
-                                    {resumeData.skills.map(skill => (
-                                        <option key={skill} value={skill}>{skill}</option>
-                                    ))}
-                                </select>
-                                <button 
-                                    id="explainSkillBtn" 
-                                    className="llm-button"
-                                    onClick={handleExplainSkill}
-                                    disabled={isLoadingSkillExplanation}
-                                >
-                                    <span id="buttonText">{isLoadingSkillExplanation ? 'Loading...' : 'Explain Skill ✨'}</span>
-                                    {isLoadingSkillExplanation && <div id="loadingSpinner" className="spinner"></div>}
-                                </button>
-                            </div>
-                            <div id="skillExplanation" className={`llm-output-display ${skillExplanation ? '' : 'hidden'}`}>
-                                {renderFormattedText(skillExplanation)}
-                            </div>
-                            <div id="errorMessage" className={`llm-error-message ${skillExplanationError ? '' : 'hidden'}`}>
-                                <p>An error occurred while fetching the explanation. Please try again.</p>
-                            </div>
-                        </div>
+                        </div>   
                     </div>
                 </section>
 
@@ -1592,186 +1175,6 @@ const App = () => {
                         </div>
                     </div>
                 </section>
-
-                <section id="interview-prep" className="section">
-                    <div className="section-container">
-                        <h2 className="section-title">Interview Prep ✨</h2>
-                        <p className="section-description">Select a project or skill to generate potential interview questions, powered by Gemini.</p>
-                        <div className="llm-section-card">
-                            <div className="llm-input-group">
-                                <select 
-                                    id="interviewTopicSelect" 
-                                    className="llm-select"
-                                    value={selectedInterviewTopic}
-                                    onChange={handleInterviewTopicChange}
-                                >
-                                    {topicsForLLM.map((topic, index) => (
-                                        <option key={index} value={topic.value}>{topic.label} ({topic.type})</option>
-                                    ))}
-                                </select>
-                                <button 
-                                    id="generateQuestionsBtn" 
-                                    className="llm-button interview-btn"
-                                    onClick={handleGenerateInterviewQuestions}
-                                    disabled={isLoadingInterviewQuestions}
-                                >
-                                    <span id="generateButtonText">{isLoadingInterviewQuestions ? 'Generating...' : 'Generate Questions ✨'}</span>
-                                    {isLoadingInterviewQuestions && <div className="spinner"></div>}
-                                </button>
-                            </div>
-                            <div id="interviewQuestionsDisplay" className={`llm-output-display interview-output ${interviewQuestions ? '' : 'hidden'}`}>
-                                {renderFormattedText(interviewQuestions)}
-                            </div>
-                            <div id="interviewError" className={`llm-error-message ${interviewQuestionsError ? '' : 'hidden'}`}>
-                                <p>An error occurred while generating questions. Please try again.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="cover-letter-prep" className="section bg-gray-50">
-                    <div className="section-container">
-                        <h2 className="section-title">Tailored Cover Letter Snippet ✨</h2>
-                        <p className="section-description">Generate a short, customized snippet for your cover letter, highlighting a relevant skill or project for a specific job/company.</p>
-                        <div className="llm-section-card">
-                            <div className="llm-input-group">
-                                <select 
-                                    id="coverLetterTopicSelect" 
-                                    className="llm-select"
-                                    value={selectedCoverLetterTopic}
-                                    onChange={handleCoverLetterTopicChange}
-                                >
-                                    {topicsForLLM.map((topic, index) => (
-                                        <option key={index} value={topic.value}>{topic.label} ({topic.type})</option>
-                                    ))}
-                                </select>
-                                <input 
-                                    type="text" 
-                                    id="jobDescriptionInput" 
-                                    placeholder="e.g., Google's AI Research position, a FinTech startup" 
-                                    className="llm-input"
-                                    value={jobDescriptionInput}
-                                    onChange={(e) => setJobDescriptionInput(e.target.value)}
-                                />
-                                <button 
-                                    id="generateCoverLetterBtn" 
-                                    className="llm-button cover-letter-btn"
-                                    onClick={handleGenerateCoverLetterSnippet}
-                                    disabled={isLoadingCoverLetterSnippet}
-                                >
-                                    <span id="coverLetterButtonText">{isLoadingCoverLetterSnippet ? 'Generating...' : 'Generate Snippet ✨'}</span>
-                                    {isLoadingCoverLetterSnippet && <div className="spinner"></div>}
-                                </button>
-                            </div>
-                            <div id="coverLetterSnippetDisplay" className={`llm-output-display cover-letter-output ${coverLetterSnippet ? '' : 'hidden'}`}>
-                                {renderFormattedText(coverLetterSnippet)}
-                            </div>
-                            <div id="coverLetterError" className={`llm-error-message ${coverLetterError ? '' : 'hidden'}`}>
-                                <p>An error occurred while generating the snippet. Please try again.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="skill-improvement" className="section">
-                    <div className="section-container">
-                        <h2 className="section-title">Skill Improvement Suggestions ✨</h2>
-                        <p className="section-description">Select a skill to receive actionable suggestions for further development in the context of AI/Data Science, powered by Gemini.</p>
-                        <div className="llm-section-card">
-                            <div className="llm-input-group">
-                                {/* Added a unique key to the select element for better React reconciliation */}
-                                <select 
-                                    key="skill-improvement-select"
-                                    id="improvementSkillSelect" 
-                                    className="llm-select"
-                                    value={selectedImprovementSkill}
-                                    onChange={handleImprovementSkillChange}
-                                >
-                                    {resumeData.skills.map(skill => (
-                                        <option key={skill} value={skill}>{skill}</option>
-                                    ))}
-                                </select>
-                                <button 
-                                    id="generateImprovementBtn" 
-                                    className="llm-button skill-improvement-btn"
-                                    onClick={handleGenerateImprovementSuggestions}
-                                    disabled={isLoadingSkillImprovement}
-                                >
-                                    <span id="improvementButtonText">{isLoadingSkillImprovement ? 'Generating...' : 'Get Suggestions ✨'}</span>
-                                    {isLoadingSkillImprovement && <div className="spinner"></div>}
-                                </button>
-                            </div>
-                            <div id="skillImprovementDisplay" className={`llm-output-display skill-improvement-output ${skillImprovementSuggestions ? '' : 'hidden'}`}>
-                                {renderFormattedText(skillImprovementSuggestions)}
-                            </div>
-                            <div id="skillImprovementError" className={`llm-error-message ${skillImprovementError ? '' : 'hidden'}`}>
-                                <p>An error occurred while generating suggestions. Please try again.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="job-relevance" className="section bg-gray-50">
-                    <div className="section-container">
-                        <h2 className="section-title">Job Role Relevance Check ✨</h2>
-                        <p className="section-description">Enter a job title or description to see how your skills and experience align, powered by Gemini.</p>
-                        <div className="llm-section-card">
-                            <div className="llm-input-group">
-                                <input 
-                                    type="text" 
-                                    id="jobRoleInput" 
-                                    placeholder="e.g., Senior Data Scientist, AI Engineer at Company X" 
-                                    className="llm-input"
-                                    value={jobRoleInput}
-                                    onChange={(e) => setJobRoleInput(e.target.value)}
-                                />
-                                <button 
-                                    id="checkRelevanceBtn" 
-                                    className="llm-button job-relevance-btn"
-                                    onClick={handleJobRoleRelevance}
-                                    disabled={isLoadingJobRoleRelevance}
-                                >
-                                    <span id="relevanceButtonText">{isLoadingJobRoleRelevance ? 'Analyzing...' : 'Check Relevance ✨'}</span>
-                                    {isLoadingJobRoleRelevance && <div className="spinner"></div>}
-                                </button>
-                            </div>
-                            <div id="jobRoleRelevanceDisplay" className={`llm-output-display job-relevance-output ${jobRoleRelevance ? '' : 'hidden'}`}>
-                                {renderFormattedText(jobRoleRelevance)}
-                            </div>
-                            <div id="jobRoleRelevanceError" className={`llm-error-message ${jobRoleRelevanceError ? '' : 'hidden'}`}>
-                                <p>An error occurred while checking relevance. Please try again.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* New Section: Resume Feedback & Optimization */}
-                <section id="resume-feedback" className="section">
-                    <div className="section-container">
-                        <h2 className="section-title">Resume Feedback & Optimization ✨</h2>
-                        <p className="section-description">Get AI-powered feedback and suggestions for optimizing your resume based on its current content.</p>
-                        <div className="llm-section-card">
-                            <div className="llm-input-group" style={{ justifyContent: 'center' }}>
-                                <button 
-                                    id="getFeedbackBtn" 
-                                    className="llm-button resume-feedback-btn"
-                                    onClick={handleGenerateResumeFeedback}
-                                    disabled={isLoadingResumeFeedback}
-                                >
-                                    <span id="feedbackButtonText">{isLoadingResumeFeedback ? 'Generating Feedback...' : 'Get Resume Feedback ✨'}</span>
-                                    {isLoadingResumeFeedback && <div className="spinner"></div>}
-                                </button>
-                            </div>
-                            <div id="resumeFeedbackDisplay" className={`llm-output-display resume-feedback-output ${resumeFeedback ? '' : 'hidden'}`}>
-                                {renderFormattedText(resumeFeedback)}
-                            </div>
-                            <div id="resumeFeedbackError" className={`llm-error-message ${resumeFeedbackError ? '' : 'hidden'}`}>
-                                <p>An error occurred while fetching resume feedback. Please try again.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
             </main>
             
             <footer id="contact" className="footer">
